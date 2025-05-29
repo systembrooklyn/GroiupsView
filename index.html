@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📚 Group Info Viewer</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap @5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #f4f6f9;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .main-container {
+      max-width: 800px;
+      width: 100%;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    .search-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      flex: 1;
+      font-size: 1.1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      transition: all 0.3s ease;
+    }
+
+    .search-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .search-button:hover {
+      background-color: #0056b3;
+    }
+
+    .section-title {
+      background-color: #007bff;
+      color: white;
+      padding: 0.5rem;
+      font-weight: bold;
+      border-radius: 6px;
+    }
+
+    .data-label {
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .lecture-card {
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background-color: #f8f9fa;
+    }
+
+    .no-data {
+      font-style: italic;
+      color: #adb5bd;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+      color: #007bff;
+    }
+
+    .error {
+      display: none;
+      color: red;
+      text-align: center;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <h2 class="mb-4 text-center">🔍 Group Info Viewer</h2>
+
+    <!-- Search Input -->
+    <div class="search-group">
+      <input type="text" id="groupCode" class="form-control search-input" placeholder="Enter Group Code (e.g., 21507)" />
+      <button class="search-button" onclick="fetchGroup()">Search</button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading">Loading group data...</div>
+
+    <!-- Error Message -->
+    <div id="error" class="error"></div>
+
+    <!-- Group Data Container -->
+    <div id="groupData">
+
+      <!-- Group Info -->
+      <div class="card mb-3">
+        <div class="section-title">📁 Group Information</div>
+        <div class="card-body">
+          <p><span class="data-label">Name:</span> <span id="groupName"></span></p>
+          <p><span class="data-label">Code:</span> <span id="groupCodeDisplay"></span></p>
+          <p><span class="data-label">Type:</span> <span id="groupType"></span></p>
+          <p><span class="data-label">Start Date:</span> <span id="startDate"></span></p>
+          <p><span class="data-label">Total Lectures:</span> <span id="totalLectures"></span></p>
+          <p><span class="data-label">Course Name:</span> <span id="courseName"></span></p>
+          <p><span class="data-label">Course Code:</span> <span id="courseCode"></span></p>
+        </div>
+      </div>
+
+      <!-- Lectures -->
+      <div class="card">
+        <div class="section-title">📅 Lectures</div>
+        <div class="card-body">
+          <div id="lecturesContainer"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    function fetchGroup() {
+      const groupCode = document.getElementById("groupCode").value.trim();
+      const groupData = document.getElementById("groupData");
+      const loading = document.getElementById("loading");
+      const error = document.getElementById("error");
+
+      if (!groupCode) {
+        alert("Please enter a group code.");
+        return;
+      }
+
+      groupData.style.display = "none";
+      loading.style.display = "block";
+      error.style.display = "none";
+
+      // Get Bearer Token from localStorage
+      const token = "424|4oc4yWznsCrbI76JlqkwnaCU2luN00Bu0gSYuNjV16ea1693";
+
+      fetch(`https://shark-app-s8ndy.ondigitalocean.app/api/groupByCode/ ${groupCode}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Group not found");
+          }
+          return response.json();
+        })
+        .then(data => {
+          loading.style.display = "none";
+
+          const group = data.group;
+
+          // Display group info
+          document.getElementById("groupName").textContent = group.name || "N/A";
+          document.getElementById("groupCodeDisplay").textContent = group.code || "N/A";
+          document.getElementById("groupType").textContent = group.type || "N/A";
+          document.getElementById("startDate").textContent = formatDate(group.start_date);
+          document.getElementById("totalLectures").textContent = group.total_lec || 0;
+          document.getElementById("courseName").textContent = group.course?.name || "N/A";
+          document.getElementById("courseCode").textContent = group.course?.code || "N/A";
+
+          // Display lectures
+          const lecturesContainer = document.getElementById("lecturesContainer");
+          lecturesContainer.innerHTML = "";
+
+          if (group.lectures && group.lectures.length > 0) {
+            group.lectures.forEach(lecture => {
+              const card = document.createElement("div");
+              card.className = "lecture-card";
+              card.innerHTML = `
+                <p class="mb-1"><strong>Name:</strong> ${lecture.name}</p>
+                <p class="mb-1"><strong>Status:</strong> ${lecture.status}</p>
+                <p class="mb-1"><strong>Start Time:</strong> ${formatDate(lecture.start_time)}</p>
+                <p class="mb-1"><strong>End Time:</strong> ${formatDate(lecture.end_time)}</p>
+                <p class="mb-0"><small><strong>ID:</strong> ${lecture.id}</small></p>
+              `;
+              lecturesContainer.appendChild(card);
+            });
+          } else {
+            lecturesContainer.innerHTML = '<p class="no-data">No lectures found.</p>';
+          }
+
+          groupData.style.display = "block";
+        })
+        .catch(err => {
+          loading.style.display = "none";
+          error.textContent = err.message;
+          error.style.display = "block";
+        });
+    }
+
+    function formatDate(dateStr) {
+      try {
+        return new Date(dateStr).toLocaleString();
+      } catch {
+        return "Invalid Date";
+      }
+    }
+
+    // Trigger search on Enter key press
+    document.getElementById("groupCode").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        fetchGroup();
+      }
+    });
+  </script>
+</body>
+</html>
