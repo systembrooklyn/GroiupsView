@@ -245,10 +245,10 @@
                 <p class="mb-1"><strong>Name:</strong> ${lecture.name}</p>
                 <p class="mb-1"><strong>Status:</strong> ${lecture.status}</p>
                 <p class="mb-1"><strong>Start Time:</strong> ${
-                  lecture.start_time
+                  formatDate(lecture.start_time)
                 }</p>
                 <p class="mb-1"><strong>End Time:</strong> ${
-                  lecture.end_time
+                  formatDate(lecture.end_time)
                 }</p>
                 <p class="mb-0"><small><strong>ID:</strong> ${
                   lecture.id
@@ -269,7 +269,19 @@
             error.style.display = "block";
           });
       }
-
+function formatDate(dateStr) {
+        try {
+          const date = new Date(dateStr);
+          // Format manually to preserve original UTC time format
+          return date
+            .toISOString()
+            .replace("T", " ")
+            .replace(".000000Z", " UTC");
+        } catch {
+          return "Invalid Date";
+        }
+      }
+      
       // function formatDate(dateStr) {
       //   try {
       //     return new Date(dateStr).toLocaleString();
