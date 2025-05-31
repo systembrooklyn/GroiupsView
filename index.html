@@ -222,9 +222,9 @@
               group.code || "N/A";
             document.getElementById("groupType").textContent =
               group.type || "N/A";
-            document.getElementById("startDate").textContent = formatDate(
+            document.getElementById("startDate").textContent = 
               group.start_date
-            );
+            ;
             document.getElementById("totalLectures").textContent =
               group.total_lec || 0;
             document.getElementById("courseName").textContent =
@@ -244,12 +244,12 @@
                 card.innerHTML = `
                 <p class="mb-1"><strong>Name:</strong> ${lecture.name}</p>
                 <p class="mb-1"><strong>Status:</strong> ${lecture.status}</p>
-                <p class="mb-1"><strong>Start Time:</strong> ${formatDate(
+                <p class="mb-1"><strong>Start Time:</strong> ${
                   lecture.start_time
-                )}</p>
-                <p class="mb-1"><strong>End Time:</strong> ${formatDate(
+                }</p>
+                <p class="mb-1"><strong>End Time:</strong> ${
                   lecture.end_time
-                )}</p>
+                }</p>
                 <p class="mb-0"><small><strong>ID:</strong> ${
                   lecture.id
                 }</small></p>
@@ -270,13 +270,13 @@
           });
       }
 
-      function formatDate(dateStr) {
-        try {
-          return new Date(dateStr).toLocaleString();
-        } catch {
-          return "Invalid Date";
-        }
-      }
+      // function formatDate(dateStr) {
+      //   try {
+      //     return new Date(dateStr).toLocaleString();
+      //   } catch {
+      //     return "Invalid Date";
+      //   }
+      // }
 
       // Trigger search on Enter key press
       document
